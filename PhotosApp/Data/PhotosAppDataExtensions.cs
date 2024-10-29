@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PhotosApp.Areas.Identity.Data;
 using PhotosApp.Services.TicketStores;
 
 namespace PhotosApp.Data
@@ -26,6 +27,9 @@ namespace PhotosApp.Data
 
                         var photosDbContext = scope.ServiceProvider.GetRequiredService<PhotosDbContext>();
                         photosDbContext.SeedWithSamplePhotosAsync().Wait();
+                        
+                        var usersManager = scope.ServiceProvider.GetRequiredService<UserManager<PhotosAppUser>>();
+                        usersManager.SeedWithSampleUsersAsync().Wait();
                     }
                 }
                 catch (Exception e)
