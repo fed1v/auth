@@ -95,7 +95,7 @@ namespace PhotosApp.Controllers
             return RedirectToAction("Index");
         }
 
-        [Authorize]
+        [Authorize(Policy = "Beta")]
         public async Task<IActionResult> EditPhoto(Guid id)
         {
             var photo = await photosRepository.GetPhotoMetaAsync(id);

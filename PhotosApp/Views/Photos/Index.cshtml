@@ -1,4 +1,6 @@
 ﻿@model PhotoIndexModel
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 @{
     ViewData["Title"] = "Все фото";
 }
@@ -29,6 +31,10 @@
             {
                 <text>Ничего не найдено...</text>
                 <text>&nbsp;<a asp-controller="Photos" asp-action="AddPhoto">Загрузите</a>&nbsp; свои фото</text>
+                @if ((await AuthorizationService.AuthorizeAsync(User, "CanAddPhoto")).Succeeded)
+                {
+                    <text>&nbsp;<a asp-controller="Photos" asp-action="AddPhoto">Загрузите</a>&nbsp; свои фото</text>
+                }
             }
             else
             {

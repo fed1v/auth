@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -24,12 +26,19 @@ namespace PhotosApp.Data
                     if (env.IsDevelopment())
                     {
                         scope.ServiceProvider.GetRequiredService<PhotosDbContext>().Database.Migrate();
+                        scope.ServiceProvider.GetRequiredService<TicketsDbContext>().Database.Migrate();
+                        
+                        var rolesManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                        rolesManager.SeedWithSampleRolesAsync().Wait();
 
                         var photosDbContext = scope.ServiceProvider.GetRequiredService<PhotosDbContext>();
                         photosDbContext.SeedWithSamplePhotosAsync().Wait();
                         
                         var usersManager = scope.ServiceProvider.GetRequiredService<UserManager<PhotosAppUser>>();
                         usersManager.SeedWithSampleUsersAsync().Wait();
+
+                        var ticketsDbContext = scope.ServiceProvider.GetRequiredService<TicketsDbContext>();
+                        ticketsDbContext.SeedWithSampleTicketsAsync().Wait();
                     }
                 }
                 catch (Exception e)
@@ -140,10 +149,12 @@ namespace PhotosApp.Data
 
         private static async Task SeedWithSampleTicketsAsync(this TicketsDbContext dbContext)
         {
+            dbContext.Database.Migrate();
             dbContext.Tickets.RemoveRange(dbContext.Tickets);
             await dbContext.SaveChangesAsync();
         }
 
+        [Authorize(Roles = "TiDe")]
         private static async Task SeedWithSampleUsersAsync<TUser>(this UserManager<TUser> userManager)
             where TUser : IdentityUser, new()
         {
@@ -159,6 +170,7 @@ namespace PhotosApp.Data
                     Email = "vicky@gmail.com"
                 };
                 await userManager.RegisterUserIfNotExists(user, "Pass!2");
+                await userManager.AddClaimAsync(user, new Claim("claimType", "claimValue"));
             }
 
             {
@@ -179,6 +191,7 @@ namespace PhotosApp.Data
                     Email = "dev@gmail.com"
                 };
                 await userManager.RegisterUserIfNotExists(user, "Pass!2");
+                await userManager.AddToRoleAsync(user, "TiDe");
             }
         }
 
